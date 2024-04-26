@@ -1,0 +1,11 @@
+[package]
+name = "hello-riscv"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "main"
+path = "main.rs"
+
+[dependencies]
+panic-halt = "0.2.0"

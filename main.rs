@@ -1,0 +1,165 @@
+#![no_std]
+#![no_main]
+
+use core::arch::{asm, global_asm};
+
+use panic_halt as _;
+
+fn main() {
+    //println!("Hello, world!");
+}
+
+#[link_section = ".init.rust"]
+#[export_name = "_start_rust"]
+pub unsafe extern "C" fn start_rust() -> ! {
+    main();
+
+    _exit(1);
+}
+
+pub unsafe extern "C" fn _exit(rc: u32) -> ! {
+    extern "C" {
+        static mut tohost: u32;
+    }
+    loop {
+        unsafe {
+            // tohost = rc | 1337;
+            tohost = (rc << 1) | 1;
+        };
+        //asm!("mv tohost, a0");
+    }
+
+    // asm!(
+    //     "#
+    //     fence
+    //     li      a7,93
+    //     // rc is already in a0, per calling convention
+    //     // mv      a0,...
+    //     ecall
+    //     unimp
+    //     #"
+    // );
+
+    unreachable!();
+}
+
+global_asm!(
+    r#"
+
+/*
+    Entry point of all programs (_start).
+
+    It initializes DWARF call frame information, the stack pointer, the
+    frame pointer (needed for closures to work in start_rust) and the global
+    pointer. Then it calls _start_rust.
+*/
+
+.section .init, "ax"
+.global _start
+
+_start:
+    /* Jump to the absolute address defined by the linker script. */
+    j _abs_start
+
+// trap_vector:
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+//     unimp
+
+_abs_start:
+    .option norelax
+    .cfi_startproc
+    .cfi_undefined ra
+
+    li  x1, 0
+    li  x2, 0
+    li  x3, 0
+    li  x4, 0
+    li  x5, 0
+    li  x6, 0
+    li  x7, 0
+    li  x8, 0
+    li  x9, 0
+    li  x10,0
+    li  x11,0
+    li  x12,0
+    li  x13,0
+    li  x14,0
+    li  x15,0
+    li  x16,0
+    li  x17,0
+    li  x18,0
+    li  x19,0
+    li  x20,0
+    li  x21,0
+    li  x22,0
+    li  x23,0
+    li  x24,0
+    li  x25,0
+    li  x26,0
+    li  x27,0
+    li  x28,0
+    li  x29,0
+    li  x30,0
+    li  x31,0
+
+    la gp, __global_pointer$
+
+    // Check hart ID
+    //csrr t2, mhartid
+    //lui t0, %hi(_max_hart_id)
+    //add t0, t0, %lo(_max_hart_id)
+    //bgtu t2, t0, abort
+
+    // Allocate stacks
+    la sp, _stack_start
+    // TODO[seth]: replace with `la`?
+    lui t0, %hi(_hart_stack_size)
+    add t0, t0, %lo(_hart_stack_size)
+
+    beqz t2, 2f  // Jump if single-hart
+    mv t1, t2
+    mv t3, t0
+1:
+    add t0, t0, t3
+    addi t1, t1, -1
+    bnez t1, 1b
+2:
+    sub sp, sp, t0
+
+    // Set frame pointer
+    add s0, sp, zero
+
+    jal zero, _start_rust
+// 3:
+//     la t0, tohost;
+//     li t1, 65;
+//     sw t1, 0(t0);
+//     j 3b;
+
+    .cfi_endproc
+
+// TODO[seth]: this feels protocol-y
+    .pushsection .tohost,"aw",@progbits;
+    .align 6; .global tohost; tohost: .dword 0;
+    .align 6; .global fromhost; fromhost: .dword 0;
+    .popsection;
+"#
+);
