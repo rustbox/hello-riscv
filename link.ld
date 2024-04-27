@@ -1,3 +1,5 @@
+# cf. https://github.com/riscv/riscv-test-env/blob/master/p/link.ld
+
 OUTPUT_ARCH( "riscv" )
 ENTRY(_start)
 
@@ -5,14 +7,15 @@ SECTIONS
 {
   . = 0x80000000;
   .text.init : { *(.init); *(.init*) }
-  . = ALIGN(0x1000);
+
   .tohost : { KEEP(*(.tohost)) }
-  . = ALIGN(0x1000);
+
   .text : { *(.text) }
-  . = ALIGN(0x1000);
   .data : { *(.data) }
   .bss : { *(.bss) }
   .rodata : { *(.rodata*) }
+
+  . = ALIGN(0x1000);
   _end = .;
 
   .eh_frame (INFO) : { *(.eh_frame) }

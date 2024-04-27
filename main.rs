@@ -1,8 +1,7 @@
 #![no_std]
 #![no_main]
 
-use core::arch::{asm, global_asm};
-
+use core::arch::global_asm;
 use panic_halt as _;
 
 fn main() {
@@ -14,7 +13,7 @@ fn main() {
 pub unsafe extern "C" fn start_rust() -> ! {
     main();
 
-    _exit(1);
+    _exit(0);
 }
 
 pub unsafe extern "C" fn _exit(rc: u32) -> ! {
@@ -23,26 +22,12 @@ pub unsafe extern "C" fn _exit(rc: u32) -> ! {
     }
     loop {
         unsafe {
-            // tohost = rc | 1337;
             tohost = (rc << 1) | 1;
         };
-        //asm!("mv tohost, a0");
     }
-
-    // asm!(
-    //     "#
-    //     fence
-    //     li      a7,93
-    //     // rc is already in a0, per calling convention
-    //     // mv      a0,...
-    //     ecall
-    //     unimp
-    //     #"
-    // );
-
-    unreachable!();
 }
 
+// cf. https://github.com/riscv/riscv-test-env/blob/1c577dc7c7d6aee27b8d5cb0e2e87c8473e3ad12/p/riscv_test.h#L168
 global_asm!(
     r#"
 
@@ -60,28 +45,6 @@ global_asm!(
 _start:
     /* Jump to the absolute address defined by the linker script. */
     j _abs_start
-
-// trap_vector:
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
-//     unimp
 
 _abs_start:
     .option norelax
@@ -122,15 +85,12 @@ _abs_start:
 
     la gp, __global_pointer$
 
-    // Check hart ID
-    //csrr t2, mhartid
-    //lui t0, %hi(_max_hart_id)
-    //add t0, t0, %lo(_max_hart_id)
-    //bgtu t2, t0, abort
-
     // Allocate stacks
     la sp, _stack_start
-    // TODO[seth]: replace with `la`?
+    // Leaving this as the spelled-out `la` pseudoinstruction, because although
+    // the linker only speaks in terms of addresses (i.e. there's no such thing
+    // as a link-time constant, just a symbol at a fixed address), it still
+    // feels a little weird to say "load the address of the size" here.
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)
 
@@ -148,15 +108,9 @@ _abs_start:
     add s0, sp, zero
 
     jal zero, _start_rust
-// 3:
-//     la t0, tohost;
-//     li t1, 65;
-//     sw t1, 0(t0);
-//     j 3b;
 
     .cfi_endproc
 
-// TODO[seth]: this feels protocol-y
     .pushsection .tohost,"aw",@progbits;
     .align 6; .global tohost; tohost: .dword 0;
     .align 6; .global fromhost; fromhost: .dword 0;
