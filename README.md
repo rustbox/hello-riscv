@@ -5,7 +5,7 @@ A simple example of booting to Rust. Built in the style of the [RISC-V ISA tests
 One possible use: instantiating up a cycle-accurate RTL simulator by way of [Chipyard](https://github.com/ucb-bar/chipyard)[^chipyard-setup][^chipyard-sim] and running the program, as in:
 
 ```
-RUSTFLAGS='-C link-arg=-Tlink.ld' cargo build --target riscv64imac-unknown-none-elf && ~/Code/src/github.com/ucb-bar/chipyard/sims/verilator/simulator-chipyard.harness-RocketConfig
+RUSTFLAGS='-C link-arg=-Tlink.ld' cargo build --target riscv64imac-unknown-none-elf && ~/Code/src/github.com/ucb-bar/chipyard/sims/verilator/simulator-chipyard.harness-RocketConfig ./target/riscv64imac-unknown-none-elf/debug/main
 ```
 
 If you see your terminal prompt come back after a dozen seconds, then it's a success! It will take a while, though, and the most common failure mode is "silent."
