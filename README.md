@@ -2,7 +2,7 @@
 
 A simple example of booting to Rust. Built in the style of the [RISC-V ISA tests](https://github.com/riscv-software-src/riscv-tests), with a dash of [riscv-rt](https://github.com/rust-embedded/riscv/tree/master/riscv-rt) for some of the more highly oxidized bits. It's a single flat directory with only a single trivial dependency because I'm really a gopher wearing a crab costume.
 
-One possible use: instantiating up a cycle-accurate RTL simulator by way of [Chipyard](https://github.com/ucb-bar/chipyard)[^chipyard-setup][^chipyard-sim], as in:
+One possible use: instantiating up a cycle-accurate RTL simulator by way of [Chipyard](https://github.com/ucb-bar/chipyard)[^chipyard-setup][^chipyard-sim] and running the program, as in:
 
 ```
 RUSTFLAGS='-C link-arg=-Tlink.ld' cargo build --target riscv64imac-unknown-none-elf 2>/dev/null && ~/Code/src/github.com/ucb-bar/chipyard/sims/verilator/simulator-chipyard.harness-RocketConfig
