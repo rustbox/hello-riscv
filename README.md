@@ -6,7 +6,7 @@ One possible use: instantiating up a cycle-accurate RTL simulator by way of [Chi
 
 ```
 RUSTFLAGS='-C link-arg=-Tlink.ld' cargo build --target riscv64imac-unknown-none-elf && \
-   ~/Code/src/github.com/ucb-bar/chipyard/sims/verilator/simulator-chipyard.harness-RocketConfig ./target/riscv64imac-unknown-none-elf/debug/main
+   ~/Code/src/github.com/ucb-bar/chipyard/sims/verilator/simulator-chipyard.harness-RocketConfig +permissive +max-cycles=100000 +permissive-off  ./target/riscv64imac-unknown-none-elf/debug/main
 ```
 
 If you see your terminal prompt come back after a dozen seconds, then it's a success! It will take a while, though, and the most common failure mode is "silent."
