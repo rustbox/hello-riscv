@@ -28,6 +28,10 @@ Some tools you might find helpful:
 * readelf
 * passing `-C link-args=--print-map` in `RUSTFLAGS`
 
+And some resources:
+* An overview: https://allthingsembedded.com/post/2020-04-11-mastering-the-gnu-linker-script/
+* A reference: https://sourceware.org/binutils/docs/ld/Scripts.html
+* A cautionary note: there's many linkers that read roughly the same script language, but discerning the fine details between them is an exercise unto itself.
 
 ## Setting up the Trap Vector
 
